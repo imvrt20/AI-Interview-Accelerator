@@ -2,6 +2,14 @@ import { useState } from "react";
 import axios from "axios";
 import "./App.css";
 
+// ==========================================
+// LIVE BACKEND URL
+// ==========================================
+
+const BACKEND_URL =
+  "https://ai-interview-accelerator-backend.onrender.com";
+
+
 function App() {
   const [jobDescription, setJobDescription] = useState("");
   const [resume, setResume] = useState("");
@@ -20,6 +28,7 @@ function App() {
   // PDF UPLOAD STATE
   const [uploading, setUploading] = useState(false);
 
+
   // =========================
   // CHECK BACKEND
   // =========================
@@ -27,8 +36,8 @@ function App() {
   const checkBackend = async () => {
     try {
       const response = await axios.get(
-        "http://127.0.0.1:8000/health"
-      );
+  "https://ai-interview-accelerator-backend.onrender.com/health"
+);
 
       setMessage(`Backend: ${response.data.status}`);
     } catch (error) {
@@ -37,95 +46,131 @@ function App() {
     }
   };
 
+
   // =========================
   // UPLOAD RESUME PDF
   // =========================
+
   const uploadResume = async (event) => {
-  const file = event.target.files[0];
+    const file = event.target.files[0];
 
-  if (!file) {
-    return;
-  }
-
-  console.log("Selected file:", file);
-  console.log("File name:", file.name);
-  console.log("File type:", file.type);
-
-  if (!file.name.toLowerCase().endsWith(".pdf")) {
-    setMessage("Please upload a PDF file only.");
-    return;
-  }
-
-  try {
-    setUploading(true);
-    setMessage("📄 Uploading and reading your resume...");
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await axios.post(
-      "http://127.0.0.1:8000/upload-resume",
-      formData
-    );
-
-    console.log("Upload response:", response.data);
-
-    if (response.data.resume_text) {
-  setResume(response.data.resume_text);
-
-  setMessage(
-    `✅ ${file.name} uploaded successfully! Resume text extracted.`
-  );
-} else {
-  setMessage(
-    response.data.message ||
-    "Could not extract resume text."
-  );
-}
-  } catch (error) {
-    console.error("PDF upload error:", error);
-
-    if (error.response) {
-      console.error(
-        "Backend response:",
-        error.response.data
-      );
-
-      setMessage(
-        `❌ Upload failed: ${
-          error.response.data.detail ||
-          error.response.data.message ||
-          "Backend error"
-        }`
-      );
-    } else if (error.request) {
-      setMessage(
-        "❌ Cannot connect to FastAPI backend."
-      );
-    } else {
-      setMessage("❌ PDF upload failed.");
+    if (!file) {
+      return;
     }
 
-  } finally {
-    setUploading(false);
-    event.target.value = "";
-  }
-};
-    // =========================
-  // ANALYZE RESUME
-  // =========================
+    console.log("Selected file:", file);
+    console.log("File name:", file.name);
+    console.log("File type:", file.type);
 
-  const analyzeResume = async () => {
-    if (!jobDescription.trim() || !resume.trim()) {
-      setMessage(
-        "Please enter both Job Description and Resume."
-      );
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      setMessage("Please upload a PDF file only.");
       return;
     }
 
     try {
+      setUploading(true);
+
+      setMessage(
+        "📄 Uploading and reading your resume..."
+      );
+
+      const formData = new FormData();
+
+      formData.append("file", file);
+
       const response = await axios.post(
-        "http://127.0.0.1:8000/analyze",
+        "https://ai-interview-accelerator-backend.onrender.com/upload-resume",
+      );
+
+      console.log(
+        "Upload response:",
+        response.data
+      );
+
+      if (response.data.resume_text) {
+
+        setResume(
+          response.data.resume_text
+        );
+
+        setMessage(
+          `✅ ${file.name} uploaded successfully! Resume text extracted.`
+        );
+
+      } else {
+
+        setMessage(
+          response.data.message ||
+          "Could not extract resume text."
+        );
+      }
+
+    } catch (error) {
+
+      console.error(
+        "PDF upload error:",
+        error
+      );
+
+      if (error.response) {
+
+        console.error(
+          "Backend response:",
+          error.response.data
+        );
+
+        setMessage(
+          `❌ Upload failed: ${
+            error.response.data.detail ||
+            error.response.data.message ||
+            "Backend error"
+          }`
+        );
+
+      } else if (error.request) {
+
+        setMessage(
+          "❌ Cannot connect to FastAPI backend."
+        );
+
+      } else {
+
+        setMessage(
+          "❌ PDF upload failed."
+        );
+      }
+
+    } finally {
+
+      setUploading(false);
+
+      event.target.value = "";
+    }
+  };
+
+
+  // =========================
+  // ANALYZE RESUME
+  // =========================
+
+  const analyzeResume = async () => {
+
+    if (
+      !jobDescription.trim() ||
+      !resume.trim()
+    ) {
+
+      setMessage(
+        "Please enter both Job Description and Resume."
+      );
+
+      return;
+    }
+
+    try {
+
+      const response = await axios.post(
+        "https://ai-interview-accelerator-backend.onrender.com/analyze",
         {
           job_description: jobDescription,
           resume: resume,
@@ -145,6 +190,7 @@ function App() {
       setScores([]);
 
     } catch (error) {
+
       console.error(error);
 
       setMessage(
@@ -153,13 +199,19 @@ function App() {
     }
   };
 
+
   // =========================
   // SUBMIT ANSWER
   // =========================
 
   const submitAnswer = async () => {
+
     if (!answer.trim()) {
-      setMessage("Please write an answer first.");
+
+      setMessage(
+        "Please write an answer first."
+      );
+
       return;
     }
 
@@ -168,19 +220,27 @@ function App() {
       !analysis.interview_questions ||
       !analysis.interview_questions[currentQuestion]
     ) {
-      setMessage("Interview question not found.");
+
+      setMessage(
+        "Interview question not found."
+      );
+
       return;
     }
 
     try {
+
       setEvaluating(true);
+
       setMessage("");
 
       const question =
-        analysis.interview_questions[currentQuestion];
+        analysis.interview_questions[
+          currentQuestion
+        ];
 
       const response = await axios.post(
-        "http://127.0.0.1:8000/evaluate-answer",
+        "https://ai-interview-accelerator-backend.onrender.com/evaluate-answer",
         {
           question: question,
           answer: answer,
@@ -190,11 +250,17 @@ function App() {
       );
 
       setSubmittedAnswer(answer);
-      setEvaluation(response.data);
+
+      setEvaluation(
+        response.data
+      );
 
       // Save score for this question
       setScores((previousScores) => {
-        const updatedScores = [...previousScores];
+
+        const updatedScores = [
+          ...previousScores
+        ];
 
         updatedScores[currentQuestion] =
           response.data.score;
@@ -207,6 +273,7 @@ function App() {
       );
 
     } catch (error) {
+
       console.error(error);
 
       setMessage(
@@ -214,22 +281,28 @@ function App() {
       );
 
     } finally {
+
       setEvaluating(false);
     }
   };
+
 
   // =========================
   // NEXT QUESTION
   // =========================
 
   const nextQuestion = () => {
+
     if (
       analysis &&
       analysis.interview_questions &&
       currentQuestion <
         analysis.interview_questions.length - 1
     ) {
-      setCurrentQuestion(currentQuestion + 1);
+
+      setCurrentQuestion(
+        currentQuestion + 1
+      );
 
       setAnswer("");
       setSubmittedAnswer("");
@@ -243,6 +316,7 @@ function App() {
     }
   };
 
+
   // =========================
   // MATCH SCORE
   // =========================
@@ -250,8 +324,6 @@ function App() {
   const matchingSkills =
     analysis?.matching_skills || [];
 
-  // Backend currently returns "missing_skills"
-  // but we also support "skills_to_improve"
   const skillsToImprove =
     analysis?.skills_to_improve ||
     analysis?.missing_skills ||
@@ -264,7 +336,9 @@ function App() {
   const calculatedScore =
     totalSkills > 0
       ? Math.round(
-          (matchingSkills.length / totalSkills) * 100
+          (matchingSkills.length /
+            totalSkills) *
+            100
         )
       : 0;
 
@@ -273,8 +347,14 @@ function App() {
     analysis?.match_percentage ??
     calculatedScore;
 
+
+  // =========================
+  // QUESTIONS
+  // =========================
+
   const totalQuestions =
-    analysis?.interview_questions?.length || 0;
+    analysis?.interview_questions?.length ||
+    0;
 
   const progress =
     totalQuestions > 0
@@ -285,13 +365,16 @@ function App() {
         )
       : 0;
 
+
   // =========================
   // INTERVIEW SCORE DATA
   // =========================
 
-  const answeredScores = scores.filter(
-    (score) => typeof score === "number"
-  );
+  const answeredScores =
+    scores.filter(
+      (score) =>
+        typeof score === "number"
+    );
 
   const questionsAnswered =
     answeredScores.length;
@@ -300,7 +383,8 @@ function App() {
     questionsAnswered > 0
       ? (
           answeredScores.reduce(
-            (total, score) => total + score,
+            (total, score) =>
+              total + score,
             0
           ) / questionsAnswered
         ).toFixed(1)
@@ -308,15 +392,21 @@ function App() {
 
   const bestScore =
     questionsAnswered > 0
-      ? Math.max(...answeredScores)
+      ? Math.max(
+          ...answeredScores
+        )
       : 0;
 
   const lowestScore =
     questionsAnswered > 0
-      ? Math.min(...answeredScores)
+      ? Math.min(
+          ...answeredScores
+        )
       : 0;
 
+
   return (
+
     <div className="app">
 
       <section className="hero">
@@ -332,7 +422,9 @@ function App() {
         <h1>
           Prepare smarter.
           <br />
-          <span>Ace your interview.</span>
+          <span>
+            Ace your interview.
+          </span>
         </h1>
 
         <p className="subtitle">
@@ -369,12 +461,15 @@ function App() {
               placeholder="Paste Job Description here..."
               value={jobDescription}
               onChange={(e) =>
-                setJobDescription(e.target.value)
+                setJobDescription(
+                  e.target.value
+                )
               }
             />
 
             <p>
-              {jobDescription.length} characters
+              {jobDescription.length}
+              {" "}characters
             </p>
 
           </div>
@@ -397,6 +492,7 @@ function App() {
               your resume manually.
             </p>
 
+
             {/* PDF UPLOAD */}
 
             <div className="upload-section">
@@ -415,6 +511,7 @@ function App() {
 
             </div>
 
+
             <p>
               OR paste your resume below:
             </p>
@@ -423,12 +520,15 @@ function App() {
               placeholder="Paste your resume here..."
               value={resume}
               onChange={(e) =>
-                setResume(e.target.value)
+                setResume(
+                  e.target.value
+                )
               }
             />
 
             <p>
-              {resume.length} characters
+              {resume.length}
+              {" "}characters
             </p>
 
           </div>
@@ -463,9 +563,11 @@ function App() {
         ========================= */}
 
         {message && (
+
           <p className="status">
             {message}
           </p>
+
         )}
 
 
@@ -486,8 +588,8 @@ function App() {
             </h1>
 
             <p>
-              Here's how well your resume matches
-              the selected job.
+              Here's how well your resume
+              matches the selected job.
             </p>
 
 
@@ -669,7 +771,8 @@ function App() {
                   <div className="progress-info">
 
                     <span>
-                      Question {currentQuestion + 1}
+                      Question{" "}
+                      {currentQuestion + 1}
                       {" "}of{" "}
                       {totalQuestions}
                     </span>
@@ -685,7 +788,8 @@ function App() {
                     <div
                       className="progress-fill"
                       style={{
-                        width: `${progress}%`,
+                        width:
+                          `${progress}%`,
                       }}
                     />
 
@@ -699,14 +803,16 @@ function App() {
                 <div className="question-card">
 
                   <p className="question-label">
-                    QUESTION {currentQuestion + 1}
+                    QUESTION{" "}
+                    {currentQuestion + 1}
                   </p>
 
                   <h2>
                     {
-                      analysis.interview_questions[
-                        currentQuestion
-                      ]
+                      analysis
+                        .interview_questions[
+                          currentQuestion
+                        ]
                     }
                   </h2>
 
@@ -717,12 +823,15 @@ function App() {
                     placeholder="Type your answer here..."
                     value={answer}
                     onChange={(e) =>
-                      setAnswer(e.target.value)
+                      setAnswer(
+                        e.target.value
+                      )
                     }
                   />
 
                   <p>
-                    {answer.length} characters
+                    {answer.length}
+                    {" "}characters
                   </p>
 
 
@@ -842,75 +951,148 @@ function App() {
                         <p>
                           {evaluation.feedback}
                         </p>
+
+
                         {/* DETAILED EVALUATION */}
 
-<div className="evaluation-details">
+                        <div className="evaluation-details">
 
-  <div className="evaluation-detail-card">
-    <span>🎯</span>
-    <p>Job Relevance</p>
-    <strong>
-      {evaluation.job_relevance || "Not available"}
-    </strong>
-  </div>
+                          <div className="evaluation-detail-card">
 
-  <div className="evaluation-detail-card">
-    <span>💻</span>
-    <p>Technical Relevance</p>
-    <strong>
-      {evaluation.technical_relevance || "Not available"}
-    </strong>
-  </div>
+                            <span>
+                              🎯
+                            </span>
 
-  <div className="evaluation-detail-card">
-    <span>📄</span>
-    <p>Resume Connection</p>
-    <strong>
-      {evaluation.resume_connection || "Not available"}
-    </strong>
-  </div>
+                            <p>
+                              Job Relevance
+                            </p>
 
-  <div className="evaluation-detail-card">
-    <span>⭐</span>
-    <p>STAR Score</p>
-    <strong>
-      {evaluation.star_score ?? 0}/4
-    </strong>
-  </div>
+                            <strong>
+                              {
+                                evaluation.job_relevance ||
+                                "Not available"
+                              }
+                            </strong>
 
-</div>
+                          </div>
 
-{evaluation.star_feedback && (
-  <div className="star-feedback">
-    <h3>⭐ STAR Method Feedback</h3>
 
-    <p>
-      {evaluation.star_feedback}
-    </p>
-  </div>
-)}
+                          <div className="evaluation-detail-card">
 
-{evaluation.technical_keywords &&
-  evaluation.technical_keywords.length > 0 && (
-    <div className="technical-keywords">
+                            <span>
+                              💻
+                            </span>
 
-      <h3>💻 Technical Concepts Detected</h3>
+                            <p>
+                              Technical Relevance
+                            </p>
 
-      <div className="skill-list">
-        {evaluation.technical_keywords.map(
-          (keyword, index) => (
-            <span
-              className="skill-badge"
-              key={index}
-            >
-              ✓ {keyword}
-            </span>
-          )
-        )}
-      </div>
+                            <strong>
+                              {
+                                evaluation.technical_relevance ||
+                                "Not available"
+                              }
+                            </strong>
 
-    </div>
-  )}
+                          </div>
+
+
+                          <div className="evaluation-detail-card">
+
+                            <span>
+                              📄
+                            </span>
+
+                            <p>
+                              Resume Connection
+                            </p>
+
+                            <strong>
+                              {
+                                evaluation.resume_connection ||
+                                "Not available"
+                              }
+                            </strong>
+
+                          </div>
+
+
+                          <div className="evaluation-detail-card">
+
+                            <span>
+                              ⭐
+                            </span>
+
+                            <p>
+                              STAR Score
+                            </p>
+
+                            <strong>
+                              {
+                                evaluation.star_score ??
+                                0
+                              }/4
+                            </strong>
+
+                          </div>
+
+                        </div>
+
+
+                        {/* STAR FEEDBACK */}
+
+                        {evaluation.star_feedback && (
+
+                          <div className="star-feedback">
+
+                            <h3>
+                              ⭐ STAR Method Feedback
+                            </h3>
+
+                            <p>
+                              {
+                                evaluation.star_feedback
+                              }
+                            </p>
+
+                          </div>
+
+                        )}
+
+
+                        {/* TECHNICAL KEYWORDS */}
+
+                        {evaluation.technical_keywords &&
+                          evaluation.technical_keywords.length > 0 && (
+
+                            <div className="technical-keywords">
+
+                              <h3>
+                                💻 Technical Concepts Detected
+                              </h3>
+
+                              <div className="skill-list">
+
+                                {
+                                  evaluation.technical_keywords.map(
+                                    (keyword, index) => (
+
+                                      <span
+                                        className="skill-badge"
+                                        key={index}
+                                      >
+                                        ✓ {keyword}
+                                      </span>
+
+                                    )
+                                  )
+                                }
+
+                              </div>
+
+                            </div>
+
+                          )}
 
                       </div>
 
@@ -959,6 +1141,7 @@ function App() {
 
                 )}
 
+
                 {/* =========================
                     INTERVIEW REPORT
                 ========================= */}
@@ -977,6 +1160,7 @@ function App() {
                     <h2>
                       Your Interview Performance
                     </h2>
+
 
                     <div className="summary-grid">
 
