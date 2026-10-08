@@ -76,16 +76,14 @@ function App() {
 
       const formData = new FormData();
 
-      formData.append("file", file);
+formData.append("file", file);
 
-      const response = await axios.post(
-        "https://ai-interview-accelerator-backend.onrender.com/upload-resume",
-      );
+const response = await axios.post(
+  "https://ai-interview-accelerator-backend.onrender.com/upload-resume",
+  formData
+);
 
-      console.log(
-        "Upload response:",
-        response.data
-      );
+console.log("Backend response:", response.data);
 
       if (response.data.resume_text) {
 
